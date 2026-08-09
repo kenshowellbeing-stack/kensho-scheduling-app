@@ -12,7 +12,6 @@ import {
 } from "./email";
 import { stripe } from "./stripe";
 import { validateSlot } from "./availability";
-import { upsertClientForBooking } from "./client";
 
 export type ConfirmResult =
   | { ok: true; alreadyConfirmed: boolean; booking: { id: number } }
@@ -74,10 +73,6 @@ export async function confirmBooking(
   } catch (err) {
     console.error(`Google Calendar sync failed for booking ${booking.id}:`, err);
   }
-
-  // Best-effort: record/refresh the Client behind this booking (for follow-up
-  // and nudge emails later). Never lets a CRM hiccup fail a paid booking.
-  await upsertClientForBooking(booking);
 
   // Best-effort: email the customer their confirmation (with manage link),
   // and notify the owner of the new booking.
