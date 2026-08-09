@@ -78,8 +78,36 @@ model Booking {
   googleEventId   String? // id of the Google Calendar event we created, so we can move/delete it
   createdAt       DateTime  @default(now())
 
+  // The person who made this booking. Filled in when the booking is confirmed
+  // (see lib/client.ts). Nullable so existing bookings are unaffected.
+  client   Client? @relation(fields: [clientId], references: [id])
+  clientId Int?
+
   @@index([startsAt])
   @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// A customer relationship, deduplicated by email. Created/updated automatically
+// whenever a booking is confirmed (lib/client.ts) — never entered by hand.
+// status:  "lead"   -> known to us but no confirmed session yet
+//          "booked" -> has a confirmed session (upcoming or just booked)
+//          "active" -> has attended a session and had their thank-you follow-up
+//          "past"   -> went quiet (>2 weeks since last session) and was nudged
+// ---------------------------------------------------------------------------
+model Client {
+  id             Int       @id @default(autoincrement())
+  name           String
+  email          String    @unique // normalised to lowercase to avoid duplicates
+  status         String    @default("lead")
+  source         String? // optional free-text: how they found you
+  lastSessionAt  DateTime? // start time of their most recent booked session
+  lastContactAt  DateTime? // last time they booked / we reached out
+  followUpSentAt DateTime? // thank-you + rebook email sent for the current session
+  nudgeSentAt    DateTime? // "checking in" nudge sent for the current quiet period
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  bookings       Booking[]
 }
 
 // ---------------------------------------------------------------------------

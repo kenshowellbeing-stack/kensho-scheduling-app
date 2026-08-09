@@ -7,6 +7,7 @@ import { expireStaleHolds } from "@/lib/booking";
 import { CURRENCY } from "@/lib/format";
 import { pushBookingToGoogleCalendar } from "@/lib/googleCalendar";
 import { sendBookingConfirmation, sendOwnerBookingNotification } from "@/lib/email";
+import { upsertClientForBooking } from "@/lib/client";
 
 // A secret, unguessable token that lets the customer manage (cancel/reschedule)
 // their own booking without needing an account.
@@ -93,6 +94,15 @@ export async function POST(request: Request) {
     } catch (err) {
       console.error(`Google Calendar sync failed for booking ${booking.id}:`, err);
     }
+
+    // Best-effort: record/refresh the Client behind this booking (for follow-up
+    // and nudge emails later).
+    await upsertClientForBooking({
+      id: booking.id,
+      customerName: name.trim(),
+      customerEmail: email.trim(),
+      startsAt,
+    });
 
     // Best-effort: email the customer their confirmation (with manage link),
     // and notify the owner of the new booking.

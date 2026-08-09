@@ -25,6 +25,11 @@ function manageUrl(token: string): string {
   return `${base}/booking/manage/${token}`;
 }
 
+// Where "book again" links point: your main booking page.
+function rebookUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+}
+
 type BookingForEmail = {
   customerName: string;
   customerEmail: string;
@@ -176,6 +181,67 @@ export async function sendBookingCancellation(
     });
   } catch (err) {
     console.error("Failed to send cancellation email:", err);
+  }
+}
+
+type ClientForEmail = {
+  name: string;
+  email: string;
+};
+
+// Sent 1–2 days after a session: a warm thank-you with an easy way to rebook.
+// Best-effort, like every other email here.
+export async function sendClientFollowUp(client: ClientForEmail): Promise<void> {
+  const resend = getResend();
+  if (!resend) return;
+
+  try {
+    const firstName = client.name.split(" ")[0] || client.name;
+    const url = rebookUrl();
+    await resend.emails.send({
+      from: fromAddress(),
+      to: client.email,
+      subject: "Thank you for coming in",
+      text: `Hi ${firstName},\n\nThank you for coming in — it was lovely to have you. I hope you left feeling a little lighter.\n\nWhenever you'd like to come back, you can book a time here:\n${url}\n\nWarmly,\nKenshō`,
+      html: wrapHtml(
+        `<h2 style="margin:0 0 12px">Thank you for coming in</h2>
+         <p>Hi ${firstName},</p>
+         <p>Thank you for coming in — it was lovely to have you. I hope you left feeling a little lighter.</p>
+         <p>Whenever you'd like to come back, you can book a time here:</p>
+         <p style="margin:16px 0"><a href="${url}" style="color:#111">Book your next session</a></p>
+         <p>Warmly,<br>Kenshō</p>`
+      ),
+    });
+  } catch (err) {
+    console.error("Failed to send client follow-up email:", err);
+  }
+}
+
+// Sent once when a client has gone quiet (>2 weeks since their last session):
+// a gentle, no-pressure check-in. Best-effort.
+export async function sendClientNudge(client: ClientForEmail): Promise<void> {
+  const resend = getResend();
+  if (!resend) return;
+
+  try {
+    const firstName = client.name.split(" ")[0] || client.name;
+    const url = rebookUrl();
+    await resend.emails.send({
+      from: fromAddress(),
+      to: client.email,
+      subject: "Thinking of you",
+      text: `Hi ${firstName},\n\nIt's been a little while since your last session, so I wanted to check in and see how you're doing.\n\nNo pressure at all — but if you'd like to come back in, you can find a time here:\n${url}\n\nTake care,\nKenshō`,
+      html: wrapHtml(
+        `<h2 style="margin:0 0 12px">Thinking of you</h2>
+         <p>Hi ${firstName},</p>
+         <p>It's been a little while since your last session, so I wanted to check in and see how you're doing.</p>
+         <p>No pressure at all — but if you'd like to come back in, you can find a time here:</p>
+         <p style="margin:16px 0"><a href="${url}" style="color:#111">Book a session</a></p>
+         <p>Take care,<br>Kenshō</p>`
+      ),
+    });
+  } catch (err) {
+    console.error("Failed to send client nudge email:", err);
   }
 }
 

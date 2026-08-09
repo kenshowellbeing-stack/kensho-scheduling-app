@@ -20,6 +20,9 @@ export default function AdminDashboardLayout({
             <Link href="/admin" className="hover:text-white">
               Bookings
             </Link>
+            <Link href="/admin/clients" className="hover:text-white">
+              Clients
+            </Link>
             <Link href="/admin/blackouts" className="hover:text-white">
               Blackout dates
             </Link>
