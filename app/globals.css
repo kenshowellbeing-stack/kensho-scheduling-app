@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Kenshō brand: black primary, white secondary. */
+body {
+  color: #ffffff;
+  background: #000000;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+/* Keep native date/time pickers legible on the dark theme. */
+input[type="datetime-local"] {
+  color-scheme: dark;
+}

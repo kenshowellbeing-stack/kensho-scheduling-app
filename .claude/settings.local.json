@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(npm install *)",
+      "Bash(claude --version)",
+      "Bash(npx prisma *)",
+      "Bash(npm ls *)",
+      "Bash(npx tsc *)",
+      "Bash(lsof -i :3000 -sTCP:LISTEN)",
+      "Bash(sqlite3 prisma/dev.db \"SELECT id, googleCalendarId, CASE WHEN googleRefreshToken IS NOT NULL THEN 'set \\(' || length\\(googleRefreshToken\\) || ' chars\\)' ELSE 'NULL' END AS refresh_token FROM Settings;\")",
+      "Bash(curl -sIL http://localhost:3000/book/1)",
+      "Bash(sqlite3 prisma/dev.db \"SELECT id, customerName, customerEmail, status, startsAt, endsAt FROM Booking ORDER BY id DESC LIMIT 1;\")",
+      "Bash(sqlite3 prisma/dev.db \"DELETE FROM Booking WHERE id = 4 AND customerEmail = 'test-customer@example.com';\")",
+      "Bash(sqlite3 prisma/dev.db \"SELECT COUNT\\(*\\) FROM Booking;\")",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(24\\).toString\\('hex'\\)\\)\")",
+      "mcp__claude-in-chrome__list_connected_browsers",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__claude-in-chrome__get_page_text",
+      "mcp__claude-in-chrome__computer",
+      "mcp__claude-in-chrome__read_page",
+      "mcp__claude-in-chrome__javascript_tool",
+      "mcp__claude-in-chrome__form_input"
+    ]
+  }
+}

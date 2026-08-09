@@ -1,0 +1,100 @@
+// This file describes the shape of our database.
+// After editing it, run:  npx prisma migrate dev
+// ...which updates the actual SQLite database file to match.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// A thing you offer for booking (e.g. "60-min Consultation").
+// ---------------------------------------------------------------------------
+model Service {
+  id              Int       @id @default(autoincrement())
+  name            String
+  description     String    @default("")
+  durationMinutes Int // how long the appointment lasts
+  priceCents      Int // price in the smallest currency unit (e.g. 5000 = £50.00)
+  active          Boolean   @default(true) // hide a service without deleting it
+  category        String    @default("") // groups services on the booking page (e.g. "Breathwork")
+  sortOrder       Int       @default(0) // ordering within a category (lower first)
+  createdAt       DateTime  @default(now())
+  bookings        Booking[]
+}
+
+// ---------------------------------------------------------------------------
+// Your working hours, one row per weekday you work.
+// startMinute / endMinute are "minutes since midnight" in your local timezone.
+// e.g. 9:00 AM = 540, 5:00 PM = 1020.
+// ---------------------------------------------------------------------------
+model AvailabilityRule {
+  id          Int     @id @default(autoincrement())
+  weekday     Int // 0 = Sunday, 1 = Monday, ... 6 = Saturday
+  startMinute Int
+  endMinute   Int
+  enabled     Boolean @default(true)
+
+  @@unique([weekday]) // at most one rule per weekday
+}
+
+// ---------------------------------------------------------------------------
+// A block of time you are NOT available (holiday, personal appointment...).
+// Stored as an absolute start/end instant (UTC under the hood).
+// ---------------------------------------------------------------------------
+model BlackoutDate {
+  id        Int      @id @default(autoincrement())
+  startsAt  DateTime
+  endsAt    DateTime
+  reason    String   @default("")
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// A customer booking.
+// status: "pending"  -> awaiting payment (holds the slot until holdExpiresAt)
+//         "confirmed"-> paid & locked in (or, for now, booked directly)
+//         "cancelled"-> released
+//         "expired"  -> unpaid hold that timed out
+// ---------------------------------------------------------------------------
+model Booking {
+  id              Int       @id @default(autoincrement())
+  service         Service   @relation(fields: [serviceId], references: [id])
+  serviceId       Int
+  customerName    String
+  customerEmail   String
+  startsAt        DateTime // start of appointment (UTC)
+  endsAt          DateTime // end of appointment (UTC)
+  status          String    @default("pending")
+  stripePaymentId String? // filled in once Stripe payment succeeds (later)
+  holdExpiresAt   DateTime? // for pending bookings: release the slot after this
+  reminderSentAt  DateTime? // set when the 24h reminder email has been sent (prevents duplicates)
+  manageToken     String?   @unique // secret token for the customer's self-service manage link
+  googleEventId   String? // id of the Google Calendar event we created, so we can move/delete it
+  createdAt       DateTime  @default(now())
+
+  @@index([startsAt])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Single-row global configuration. We always use the row with id = 1.
+// ---------------------------------------------------------------------------
+model Settings {
+  id            Int    @id @default(1)
+  timezone      String @default("Europe/London") // your working timezone
+  bufferMinutes Int    @default(0) // gap enforced between appointments
+  minNoticeHours Int   @default(12) // customers can't book less than this far ahead
+  cancelCutoffHours Int @default(24) // customers can self-cancel/reschedule up to this many hours before
+
+  // Google Calendar sync: set once you connect your Google account via
+  // /api/google/connect. googleRefreshToken lets the app create calendar
+  // events on your behalf without you having to log in again.
+  googleRefreshToken String?
+  googleCalendarId   String  @default("primary")
+}

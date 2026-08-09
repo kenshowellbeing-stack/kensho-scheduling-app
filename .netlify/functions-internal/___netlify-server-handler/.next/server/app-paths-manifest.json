@@ -1,0 +1,18 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/google/callback/route": "app/api/google/callback/route.js",
+  "/api/google/connect/route": "app/api/google/connect/route.js",
+  "/apple-icon.png/route": "app/apple-icon.png/route.js",
+  "/book/[serviceId]/page": "app/book/[serviceId]/page.js",
+  "/icon.png/route": "app/icon.png/route.js",
+  "/api/cron/reminders/route": "app/api/cron/reminders/route.js",
+  "/api/webhooks/stripe/route": "app/api/webhooks/stripe/route.js",
+  "/admin/login/page": "app/admin/login/page.js",
+  "/page": "app/page.js",
+  "/booking/manage/[token]/page": "app/booking/manage/[token]/page.js",
+  "/api/checkout/route": "app/api/checkout/route.js",
+  "/book/success/page": "app/book/success/page.js",
+  "/admin/(dashboard)/services/page": "app/admin/(dashboard)/services/page.js",
+  "/admin/(dashboard)/blackouts/page": "app/admin/(dashboard)/blackouts/page.js",
+  "/admin/(dashboard)/page": "app/admin/(dashboard)/page.js"
+}
