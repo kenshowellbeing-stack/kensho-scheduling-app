@@ -37,7 +37,7 @@ export default async function AdminClientsPage() {
 
       {clients.length === 0 ? (
         <p className="mt-6 rounded-lg border border-dashed border-zinc-700 p-6 text-center text-zinc-400">
-          No clients yet. They'll appear here automatically once someone books.
+          No clients yet. New clients appear here automatically once someone books.
         </p>
       ) : (
         <div className="mt-6 overflow-x-auto">
